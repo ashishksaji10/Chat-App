@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import toast from 'react-hot-toast';
 import { createNewChat } from './../../../apiCalls/Chat';
 import { showLoader, hideLoader } from './../../../redux/loaderSlice';
-import { setAllChats } from './../../../redux/userSlice';
+import { setAllChats, setSelectedChat } from './../../../redux/userSlice';
 
 const UserList = ({ searchKey }) => {
 
@@ -20,10 +20,20 @@ const UserList = ({ searchKey }) => {
                 const newChat = response.data;
                 const updatedChat = [...allChats, newChat];
                 dispatch(setAllChats(updatedChat));
+                dispatch(setSelectedChat(newChat))
             }
         } catch (error) {
             toast.error(response.error)
             dispatch(hideLoader())
+        }
+    }
+
+    const openChat = (searchedUserId) => {
+        const chat = allChats.find(chat => chat.members.includes(currentUser._id) &&
+        chat.members.includes(searchedUserId));
+
+        if(chat){
+            dispatch(setSelectedChat(chat));
         }
     }
     return (
@@ -36,7 +46,7 @@ const UserList = ({ searchKey }) => {
             ) || ( allChats.some(chat => chat.members.includes(user._id)))
         })
         .map(user => {
-            return <div class="user-search-filter">
+            return <div class="user-search-filter" onClick={() => openChat(user._id)} key={user._id}>
                 <div class="filtered-user">
                     <div class="filter-user-display">
                         {user.profilePic && <img src={user.profilePic} alt="Profile Pic" class="user-profile-image"/>}
