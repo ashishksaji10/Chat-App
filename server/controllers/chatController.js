@@ -23,7 +23,7 @@ router.post('/create-new-chat', authMiddleware, async (req,res) => {
 
 router.get('/get-all-chat', authMiddleware, async (req, res) => {
     try {
-        const allChats = await Chat.find({members: {$in : req.body.userId}})
+        const allChats = await Chat.find({members: {$in : req.body.userId}}).populate('members').sort({updatedAt: -1});
 
         res.status(201).send({
             message: 'Chat fetched successfully',
