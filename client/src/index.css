@@ -378,21 +378,30 @@ i{
 }
 
 
-/*CSS FOR SELECTED USER*/
+/*CSS FOR CHAT MESSAGES*/
 
 
+.message-container{
+  display: flex;
+}
+.send-message, .received-message{
+  padding: 10px 20px;
+  margin-top: 5px;
+  border-radius: 3px;
+  font-size: 14px;
+  width: fit-content;
+}
 
-/* .selected-user-avatar{
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: white;
-  color: #e74c3c;
-  font-size: 22px;
-  font-weight: bold;
-  text-align: center;
-  vertical-align: middle;
-  line-height: 50px;
-} */
+.send-message{ 
+  background-color: #e74c3c;
+  color: white;
+  margin-left: 100px;
+}
+
+.received-message{ 
+  background-color: #ddd;
+  color: #28282B;
+  margin-right: 100px;
+}
 
 

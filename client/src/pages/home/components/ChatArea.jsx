@@ -58,12 +58,18 @@ const ChatArea = () => {
 
   return ( 
     <>
-      { selectedChat && <div class="app-chat-area">
-          <div class="app-chat-area-header">
+      { selectedChat && <div className="app-chat-area">
+          <div className="app-chat-area-header">
               { selectedUser.firstname + ' ' + selectedUser.lastname}
           </div>
           <div className="main-chat-area">
-            CHAT AREA
+            { allMessages.map(msg => {
+              const isCurrentUserSender = msg.sender === user._id;
+                return <div className="message-container" style={isCurrentUserSender ? {justifyContent: 'end'} : { justifyContent: 'start'}}>
+                  <div className={isCurrentUserSender ? "send-message": "received-message"}>{ msg.text }</div>
+              </div>
+            })}
+            
           </div>
           <div className="send-message-div">
               <input type="text" className="send-message-input" placeholder="Type a message" value={message} onChange={ (e) => setMessage(e.target.value)}/>
