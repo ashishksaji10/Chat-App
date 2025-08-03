@@ -2,11 +2,23 @@ import { useSelector } from "react-redux"
 
 const ChatArea = () => {
 
-  const { selectedChat } = useSelector(state => state.userReducer);
-  return (
-    <div>
-      { selectedChat && <h2> { selectedChat._id } </h2> }
-    </div>
+  const { selectedChat, user } = useSelector(state => state.userReducer);
+  const selectedUser = selectedChat.members.find( u => u._id !== user._id) 
+
+  return ( 
+    <>
+      { selectedChat && <div class="app-chat-area">
+          <div class="app-chat-area-header">
+              { selectedUser.firstname + ' ' + selectedUser.lastname}
+          </div>
+          <div>
+            CHAT AREA
+          </div>
+          <div>
+              SEND MESSAGE
+          </div>
+        </div> }
+    </>
   )
 }
 
