@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const Chat = require('../models/chat');
+const Message = require('../models/message');
 
 
 router.post('/create-new-chat', authMiddleware, async (req,res) => {
@@ -19,7 +20,7 @@ router.post('/create-new-chat', authMiddleware, async (req,res) => {
             success: false
         })
     }
-})
+});
 
 router.get('/get-all-chat', authMiddleware, async (req, res) => {
     try {
@@ -40,6 +41,45 @@ router.get('/get-all-chat', authMiddleware, async (req, res) => {
             success: false
         })
     }
+});
+
+router.post('/clear-unread-message', authMiddleware, async (req, res) => {
+    try {
+        const chatId = req.body.chatId;
+
+        const chat = await Chat.findById(chatId);
+        if(!chat){
+            res.send({
+                message: "No chat found with given chatId",
+                success: false,
+            });
+        }
+        const updatedChat = await Chat.findByIdAndUpdate(
+            chatId,
+            { unReadMessageCount: 0},
+            {new: true}
+        ).populate('members').populate('lastMessage');
+
+
+        await Message.updateMany(
+            {chatId:chatId, read:false},
+            {read: true}
+        );
+
+        res.send({
+            message: "Unread message cleared successfully",
+            success: true,
+            data: updatedChat
+        });
+
+
+    } catch (error) {
+        res.send({
+            message: error.message,
+            success: false
+        });
+    }
 })
+
 
 module.exports = router;

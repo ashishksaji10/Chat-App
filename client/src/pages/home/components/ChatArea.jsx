@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from "react-redux"
 import { createNewMessage, getAllMessages } from "../../../apiCalls/Message";
 import { hideLoader, showLoader } from "../../../redux/loaderSlice";
+import { clearUnreadMessageCount } from "../../../apiCalls/Chat";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import moment from 'moment';
@@ -8,7 +9,7 @@ import moment from 'moment';
 const ChatArea = () => {
 
   const dispatch = useDispatch();
-  const { selectedChat, user } = useSelector(state => state.userReducer);
+  const { selectedChat, user, allChats } = useSelector(state => state.userReducer);
   const selectedUser = selectedChat.members.find( u => u._id !== user._id);
   
   const [ message, setMessage ] = useState('');
@@ -65,6 +66,28 @@ const ChatArea = () => {
     }
   }
 
+  const clearUnreadMessages = async () => {
+    try {
+
+      dispatch(showLoader());
+      const response = await clearUnreadMessageCount(selectedChat._id);
+      dispatch(hideLoader());
+
+      if(response.success){
+          allChats.map(chat => {
+            if(chat._id === selectedChat._id){
+              return response.data;
+            }
+            return chat
+          })
+      }
+
+    } catch (error) {
+      dispatch(hideLoader())
+      toast.error(error.message)
+    }
+  }
+
   const formatName = (user) => {
     let fname = user.firstname.at(0).toUpperCase() + user.firstname.slice(1).toLowerCase();
     let lname = user.lastname.at(0).toUpperCase() + user.lastname.slice(1).toLowerCase();
@@ -75,6 +98,7 @@ const ChatArea = () => {
 
   useEffect(() => {
     getMessages();
+    clearUnreadMessages();
   },[selectedChat])
 
   return ( 
