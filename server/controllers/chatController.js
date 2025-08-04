@@ -9,6 +9,8 @@ router.post('/create-new-chat', authMiddleware, async (req,res) => {
         const chat = new Chat(req.body);
         const savedChat = await chat.save();
 
+        await savedChat.populate('members');
+
         res.status(201).send({
             message: 'Chat created successfully',
             success: true,
