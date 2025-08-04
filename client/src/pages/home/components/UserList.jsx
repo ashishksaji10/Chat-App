@@ -48,7 +48,7 @@ const UserList = ({ searchKey }) => {
 
     const getLastMessageTimeStamp = (userId) => {
         const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId));
-        if(!chat || chat?.lastMessage){
+        if(!chat || !chat?.lastMessage){
             return "";
         }else {
           return moment(chat?.lastMessage?.createdAt).format('hh:mm A');
@@ -70,6 +70,18 @@ const UserList = ({ searchKey }) => {
         let lname = user.lastname.at(0).toUpperCase() + user.lastname.slice(1).toLowerCase();
 
         return fname + " " + lname;
+    }
+
+    const getUnreadMessageCount = (userId) => {
+        const chat = allChats.find(chat => 
+            chat.members.map(m => m._id).includes(userId)
+        );
+
+        if(chat && chat.unReadMessageCount && chat.lastMessage.sender !== currentUser._id){
+            return <div className='uread-message-counter'>{chat.unReadMessageCount}</div>
+        }else{
+            return ""
+        }
     }
 
     return (
@@ -96,7 +108,10 @@ const UserList = ({ searchKey }) => {
                             <div className="user-display-name">{ formatName(user)}</div>
                             <div className="user-display-email">{getLastMessage(user._id) || user.email}</div>
                         </div>
+                        <div>
+                        { getUnreadMessageCount(user._id) }
                         <div className='last-message-timestamp'>{ getLastMessageTimeStamp(user._id) }</div>
+                        </div>
                         { !allChats.find(chat => chat.members.map(m => m._id).includes(user._id)) &&
                             <div className="user-start-chat">
                                 <button className="user-start-chat-btn" onClick={() => startNewChat(user._id)}>
