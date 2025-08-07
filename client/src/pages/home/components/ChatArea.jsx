@@ -5,6 +5,7 @@ import { clearUnreadMessageCount } from "../../../apiCalls/Chat";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import moment from 'moment';
+import store from './../../../redux/store';
 
 const ChatArea = ({ socket }) => {
 
@@ -108,9 +109,17 @@ const ChatArea = ({ socket }) => {
     }
 
     socket.off('receive-message').on('receive-message', (data) => {
-      setAllMessages(prevmsg => [...prevmsg, data])
+      const selectedChat = store.getState().userReducer.selectedChat;
+      if(selectedChat._id === data.chatId){
+        setAllMessages(prevmsg => [...prevmsg, data])
+      }
     })
   },[selectedChat])
+
+  useEffect(() => {
+      const msgContainer = document.getElementById('main-chat-area');
+      msgContainer.scrollTop = msgContainer.scrollHeight
+  }, [allMessages])
 
   return ( 
     <>
@@ -118,7 +127,7 @@ const ChatArea = ({ socket }) => {
           <div className="app-chat-area-header">
               { formatName(selectedUser) }
           </div>
-          <div className="main-chat-area">
+          <div className="main-chat-area" id="main-chat-area">
             { allMessages.map(msg => {
               const isCurrentUserSender = msg.sender === user._id;
                 return <div className="message-container" style={isCurrentUserSender ? {justifyContent: 'end'} : { justifyContent: 'start'}}>
