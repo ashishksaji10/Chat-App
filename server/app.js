@@ -31,6 +31,13 @@ io.on('connection', socket => {
         .to(message.members[0])
         .to(message.members[1])
         .emit('receive-message', message)
+    });
+
+    socket.on('clear-unread-messages', data => {
+        io
+        .to(data.members[0])
+        .to(data.members[1])
+        .emit('message-count-cleared', data);
     })
 })
 

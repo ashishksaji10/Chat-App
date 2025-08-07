@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import moment from 'moment';
 import store from './../../../redux/store';
+import { setAllChats } from "../../../redux/userSlice";
 
 const ChatArea = ({ socket }) => {
 
@@ -75,9 +76,12 @@ const ChatArea = ({ socket }) => {
   const clearUnreadMessages = async () => {
     try {
 
-      dispatch(showLoader());
+      socket.emit('clear-unread-messages', {
+        chatId: selectedChat._id,
+        members: selectedChat.members.map(m => m._id)
+      })
+
       const response = await clearUnreadMessageCount(selectedChat._id);
-      dispatch(hideLoader());
 
       if(response.success){
           allChats.map(chat => {
@@ -89,7 +93,6 @@ const ChatArea = ({ socket }) => {
       }
 
     } catch (error) {
-      dispatch(hideLoader())
       toast.error(error.message)
     }
   }
@@ -108,12 +111,37 @@ const ChatArea = ({ socket }) => {
       clearUnreadMessages();
     }
 
-    socket.on('receive-message', (data) => {
+    socket.on('receive-message', (message) => {
       const selectedChat = store.getState().userReducer.selectedChat;
-      if(selectedChat._id === data.chatId){
-        setAllMessages(prevmsg => [...prevmsg, data])
+      if(selectedChat._id === message.chatId){
+        setAllMessages(prevmsg => [...prevmsg, message])
+      }
+
+      if(selectedChat._id === message.chatId && message.sender !== user._id){
+        clearUnreadMessages();
       }
     })
+
+    socket.on('message-count-cleared', data => {
+        const selectedChat = store.getState().userReducer.selectedChat;
+        const allChats = store.getState().userReducer.allChats;
+
+        if(selectedChat._id === data.chatId){
+          const updatedChats = allChats.map(chat => {
+              if(chat._id === data.chatId){
+                  return { ...chat, unReadMessageCount: 0}
+            }
+            return chat;
+          })
+          dispatch(setAllChats(updatedChats));
+          setAllMessages( prevMsgs => {
+            return prevMsgs.map(msg => {
+              return { ...msg, read: true}
+            })
+          })
+        }
+    })
+
   },[selectedChat])
 
   useEffect(() => {
