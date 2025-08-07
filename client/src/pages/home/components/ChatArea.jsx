@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import moment from 'moment';
 
-const ChatArea = () => {
+const ChatArea = ({ socket }) => {
 
   const dispatch = useDispatch();
   const { selectedChat, user, allChats } = useSelector(state => state.userReducer);
@@ -14,6 +14,7 @@ const ChatArea = () => {
   
   const [ message, setMessage ] = useState('');
   const [ allMessages, setAllMessages ] = useState([]);
+
   const sendMessage = async () => {
     try {
       const newMessage = {
@@ -22,16 +23,20 @@ const ChatArea = () => {
         text: message,
       }
 
-      dispatch(showLoader());
+      socket.emit('send-message', {
+        ...newMessage,
+        members: selectedChat.members.map(m => m._id),
+        read: false,
+        createdAt: moment().format('DD-MM-YYYY hh:mm:ss')
+      })
+
       const response = await createNewMessage(newMessage);
-      dispatch(hideLoader());
 
       if(response.success){
         setMessage('');
       }
 
     } catch (error) {
-      dispatch(hideLoader())
       toast.error(error.message)
     }
   }
@@ -101,6 +106,10 @@ const ChatArea = () => {
     if(selectedChat?.lastMessage?.sender !== user._id){
       clearUnreadMessages();
     }
+
+    socket.off('receive-message').on('receive-message', (data) => {
+      setAllMessages(prevmsg => [...prevmsg, data])
+    })
   },[selectedChat])
 
   return ( 

@@ -23,7 +23,6 @@ router.get('/get-all-users', authMiddleware, async (req, res) => {
     try {
         const userId = req.body.userId
         const allUsers = await User.find({_id : { $ne: userId }});
-        console.log(allUsers);
 
         res.send({
             message: 'All user fetch successfully',

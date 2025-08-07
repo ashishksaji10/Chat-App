@@ -3,11 +3,11 @@ dotenv.config({ path: './config.env' })
 
 const dbconfig = require('./config/dbConfig')
 
-const app = require('./app')
+const server = require('./app')
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, ()=> {
+server.listen(port, ()=> {
     console.log('listening to request on port: http://localhost:'+ port);
     
 })

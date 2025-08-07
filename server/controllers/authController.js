@@ -18,7 +18,6 @@ router.post('/signup', async (req,res) => {
         req.body.password = hashedPassword
 
         const newUser = new User(req.body);
-        console.log(newUser);
         await newUser.save();
 
         res.status(201).send({
@@ -37,7 +36,6 @@ router.post('/signup', async (req,res) => {
 router.post('/login', async (req,res) => {
     try {
         const user = await User.findOne({email: req.body.email})
-        console.log(user);
         
         if(!user){
             return res.send({
