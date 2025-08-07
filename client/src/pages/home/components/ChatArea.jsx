@@ -28,7 +28,7 @@ const ChatArea = ({ socket }) => {
         ...newMessage,
         members: selectedChat.members.map(m => m._id),
         read: false,
-        createdAt: moment().format('DD-MM-YYYY hh:mm:ss')
+        createdAt: moment().format('YYYY-MM-DD hh:mm:ss')
       })
 
       const response = await createNewMessage(newMessage);
@@ -108,7 +108,7 @@ const ChatArea = ({ socket }) => {
       clearUnreadMessages();
     }
 
-    socket.off('receive-message').on('receive-message', (data) => {
+    socket.on('receive-message', (data) => {
       const selectedChat = store.getState().userReducer.selectedChat;
       if(selectedChat._id === data.chatId){
         setAllMessages(prevmsg => [...prevmsg, data])
