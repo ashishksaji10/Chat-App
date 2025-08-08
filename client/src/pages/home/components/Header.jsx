@@ -26,7 +26,8 @@ const Header = () => {
             </div>
         <div className="app-user-profile">
             <div className="logged-user-name">{ getFullName() }</div>
-            <div className="logged-user-profile-pic" onClick={ () => navigate('/profile')}>{ getInitial() }</div>
+            {user?.profilePic && <img src={user?.profilePic} alt="profile-pic" className="logged-user-profile-pic" onClick={ () => navigate('/profile')}/> }
+            {!user?.profilePic && <div className="logged-user-profile-pic" onClick={ () => navigate('/profile')}>{ getInitial() }</div>}
         </div>
     </div>
   )
