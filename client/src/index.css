@@ -454,7 +454,7 @@ i{
 /*MEDIA QUERY FOR USER LIST*/
 
 @media only screen and (max-width: 1000px) {
-  .filter-user-details {
+  .filter-user-details, .last-message-timestamp, .uread-message-counter {
     display: none;
   }
   .user-search-area {
@@ -480,4 +480,10 @@ i{
   background-color: #e74c3c;
   font-weight: bold;
   color: white;
+}
+
+
+.typing-indicator{
+  font-size: 13px;
+  color: grey;
 }
