@@ -3,7 +3,7 @@ import Search from "./Search"
 import UserList from "./UserList";
 
 
-const Sidebar = ({ socket }) => {
+const Sidebar = ({ socket, onlineUser }) => {
 
   const [searchKey, setSearchKey] = useState('');
 
@@ -13,7 +13,11 @@ const Sidebar = ({ socket }) => {
             searchKey = { searchKey }
             setSearchKey = { setSearchKey }
         />
-        <UserList searchKey = { searchKey } socket={socket}/>
+        <UserList 
+        searchKey = { searchKey }
+        socket={socket} 
+        onlineUser={onlineUser}
+        />
     </div>
   )
 }
