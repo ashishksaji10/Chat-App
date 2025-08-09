@@ -57,6 +57,11 @@ io.on('connection', socket => {
         }
         socket.emit('online-users', onlineUsers);
     })
+
+    socket.on('user-offline', userId => {
+        onlineUsers.splice(onlineUsers.indexOf(userId),1);
+        io.emit('online-user-updated', onlineUsers);
+    })
 })
 
 module.exports = server;

@@ -19,12 +19,15 @@ const Home = () => {
       socket.on('online-users', onlineUsers => {
           setOnlineUsers(onlineUsers);
       })
+      socket.on('online-user-updated', onlineUsers => {
+          setOnlineUsers(onlineUsers);
+      })
     }
   }, [user])
 
   return (
     <div className="home-page">
-      <Header />
+      <Header socket={socket}/>
         <div className="main-content">
             <Sidebar socket={socket} onlineUser={onlineUser}/> 
             {selectedChat && <ChatArea socket={socket} />}
