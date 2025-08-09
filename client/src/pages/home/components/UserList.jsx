@@ -25,6 +25,7 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
                 dispatch(setAllChats(updatedChat));
                 dispatch(setSelectedChat(newChat))
             }
+        // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error(response.error)
             dispatch(hideLoader())
@@ -112,6 +113,7 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
 
             dispatch(setAllChats(allChats));
         })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const getData = () => {
