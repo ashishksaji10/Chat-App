@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const url = "https://chat-app-1-wz1x.onrender.com";
+export const url = import.meta.env.VITE_URL;
 
 export const axiosInstance = axios.create({
     headers: {
