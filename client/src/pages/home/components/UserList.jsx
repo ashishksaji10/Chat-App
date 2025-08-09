@@ -25,7 +25,6 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
                 dispatch(setAllChats(updatedChat));
                 dispatch(setSelectedChat(newChat))
             }
-        // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error(response.error)
             dispatch(hideLoader())
@@ -113,14 +112,13 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
 
             dispatch(setAllChats(allChats));
         })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const getData = () => {
         if(searchKey === ""){
             return allChats;
         }else{
-            allUsers.filter(user => {
+            return allUsers.filter(user => {
                 return user.firstname.toLowerCase().includes(searchKey.toLowerCase()) || 
                     user.lastname.toLowerCase().includes(searchKey.toLowerCase());
             });
@@ -129,8 +127,7 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
 
 
     return (
-        getData()
-        .map(obj => {
+        (getData() || []).map(obj => {
             let user = obj;
             if(obj.members){
                 user = obj.members.find(mem => mem._id !== currentUser._id);
