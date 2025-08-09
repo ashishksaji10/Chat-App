@@ -23,7 +23,7 @@ const Home = () => {
           setOnlineUsers(onlineUsers);
       })
     }
-  }, [user])
+  }, [user, onlineUser])
 
   return (
     <div className="home-page">

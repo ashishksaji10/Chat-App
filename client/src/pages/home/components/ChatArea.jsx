@@ -19,6 +19,7 @@ const ChatArea = ({ socket }) => {
   const [ allMessages, setAllMessages ] = useState([]);
   const [ isTyping, setIsTyping ] = useState(false);
   const [ showEmojiPicker, setShowEmojiPicker ] = useState(false);
+  const [ data, setData ] = useState(null);
 
   const sendMessage = async (image) => {
     try {
@@ -126,7 +127,7 @@ const ChatArea = ({ socket }) => {
       clearUnreadMessages();
     }
 
-    socket.on('receive-message', (message) => {
+    socket.off('receive-message').on('receive-message', (message) => {
       const selectedChat = store.getState().userReducer.selectedChat;
       if(selectedChat._id === message.chatId){
         setAllMessages(prevmsg => [...prevmsg, message])
@@ -158,6 +159,7 @@ const ChatArea = ({ socket }) => {
     })
 
     socket.on('started-typing', (data) => {
+      setData(data)
         if(selectedChat._id === data.chatId && data.sender !== user._id){
           setIsTyping(true);
           setTimeout(() => {
@@ -196,7 +198,8 @@ const ChatArea = ({ socket }) => {
               </div>
             })}
             
-            <div className="typing-indicator">{isTyping && <i>typing...</i>}</div>
+            <div className="typing-indicator">
+              {isTyping && selectedChat?.members.map(m => m._id).includes(data?.sender) && <i>typing...</i>}</div>
           </div>
 
             { showEmojiPicker && <div style={{ width: '100px', display: "flex", padding:"0px 20px", justifyContent: 'right'}}>
