@@ -19,15 +19,17 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
             dispatch(hideLoader())
 
             if(response.success){
-                toast.success(response.message);
+                toast.success(response.message || "Conversation started!");
                 const newChat = response.data;
                 const updatedChat = [...allChats, newChat];
                 dispatch(setAllChats(updatedChat));
                 dispatch(setSelectedChat(newChat))
+            } else {
+                toast.error(response.message || "Could not start chat.");
             }
         } catch (error) {
-            toast.error(response.error)
             dispatch(hideLoader())
+            toast.error(error.message || "An error occurred. Please try again.");
         }
     }
 
@@ -127,44 +129,87 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
 
 
     return (
-        (getData() || []).map(obj => {
-            let user = obj;
-            if(obj.members){
-                user = obj.members.find(mem => mem._id !== currentUser._id);
-            }
-            return <div className="user-search-filter" onClick={() => openChat(user._id)} key={user._id}>
-                <div className={ isSelectedChat(user) ? "selected-user" : "filtered-user"}>
-                    <div className="filter-user-display">
-                        {user.profilePic && <img src={user.profilePic} 
-                                                alt="Profile Pic" 
-                                                className="user-profile-image" 
-                                                style={onlineUser.includes(user._id) ? {border: '#82e0aa 3px solid'} : {}}/>}
-                        {!user.profilePic && <div className={isSelectedChat ? "user-selected-avatar" :"user-default-avatar" } 
-                        style={onlineUser.includes(user._id) ? {border: '#82e0aa 3px solid'} : {}}>
-                            {
-                                user.firstname.charAt(0).toUpperCase() +
-                                user.lastname.charAt(0).toUpperCase() 
-                            }
-                        </div>}
-                        <div className="filter-user-details">
-                            <div className="user-display-name">{ formatName(user)}</div>
-                            <div className="user-display-email">{getLastMessage(user._id) || user.email}</div>
+        <div className="flex flex-col">
+            {(getData() || []).map(obj => {
+                let user = obj;
+                if(obj.members){
+                    user = obj.members.find(mem => mem._id !== currentUser._id);
+                }
+                const isSelected = isSelectedChat(user);
+                const isOnline = onlineUser.includes(user._id);
+                const unreadCount = getUnreadMessageCount(user._id);
+
+                return (
+                    <div 
+                        className={`group relative flex items-center gap-4 p-4 cursor-pointer transition-all border-b border-gray-50
+                            ${isSelected ? 'bg-red-50 border-l-4 border-l-[#e74c3c]' : 'hover:bg-gray-50 border-l-4 border-l-transparent'}
+                        `} 
+                        onClick={() => openChat(user._id)} 
+                        key={user._id}
+                    >
+                        {/* Avatar Section */}
+                        <div className="relative shrink-0">
+                            {user.profilePic ? (
+                                <img 
+                                    src={user.profilePic} 
+                                    alt="Profile" 
+                                    className={`w-12 h-12 rounded-full object-cover ring-2 transition-all
+                                        ${isOnline ? 'ring-green-400' : 'ring-gray-200 opacity-80'}
+                                    `}
+                                />
+                            ) : (
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ring-2 transition-all
+                                    ${isSelected ? 'bg-[#e74c3c] text-white' : 'bg-gray-100 text-gray-600'}
+                                    ${isOnline ? 'ring-green-400' : 'ring-gray-200'}
+                                `}>
+                                    {user.firstname.charAt(0).toUpperCase() + user.lastname.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white rounded-full transition-colors
+                                ${isOnline ? 'bg-green-500' : 'bg-gray-300'}
+                            `}></span>
                         </div>
-                        <div>
-                        { getUnreadMessageCount(user._id) }
-                        <div className='last-message-timestamp'>{ getLastMessageTimeStamp(user._id) }</div>
-                        </div>
-                        { !allChats.find(chat => chat.members.map(m => m._id).includes(user._id)) &&
-                            <div className="user-start-chat">
-                                <button className="user-start-chat-btn" onClick={() => startNewChat(user._id)}>
-                                    Start Chat
-                                    </button>
+
+                        {/* Details Section */}
+                        <div className="flex-1 min-w-0 pr-2">
+                            <div className="flex justify-between items-baseline mb-1">
+                                <h3 className={`font-semibold truncate ${isSelected ? 'text-gray-900' : 'text-gray-800'}`}>
+                                    {formatName(user)}
+                                </h3>
+                                <span className="text-[11px] text-gray-500 font-medium">
+                                    {getLastMessageTimeStamp(user._id)}
+                                </span>
                             </div>
-                        }
+                            <div className="flex justify-between items-center">
+                                <p className={`text-xs truncate ${isSelected ? 'text-gray-600' : 'text-gray-500'}`}>
+                                    {getLastMessage(user._id) || user.email}
+                                </p>
+                                {unreadCount && (
+                                    <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#e74c3c] text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                                        {unreadCount.props.children}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Start Chat Button for Search Results */}
+                        {!allChats.find(chat => chat.members.map(m => m._id).includes(user._id)) && (
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                    className="bg-[#e74c3c] text-white text-[10px] font-bold py-2 px-3 rounded-lg shadow-md hover:bg-[#c0392b] active:scale-95" 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        startNewChat(user._id);
+                                    }}
+                                >
+                                    START CHAT
+                                </button>
+                            </div>
+                        )}
                     </div>
-                </div>
-            </div>
-        })
+                );
+            })}
+        </div>
     )
 }
 
