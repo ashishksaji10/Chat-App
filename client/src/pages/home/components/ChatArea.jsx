@@ -113,6 +113,7 @@ const ChatArea = ({ socket, onlineUser }) => {
 
   const sendImage = async(e) => {
       const file = e.target.files[0];
+      if (!file) return;
       const reader = new FileReader(file);
       reader.readAsDataURL(file);
 
@@ -130,11 +131,11 @@ const ChatArea = ({ socket, onlineUser }) => {
 
     socket.off('receive-message').on('receive-message', (message) => {
       const selectedChat = store.getState().userReducer.selectedChat;
-      if(selectedChat._id === message.chatId){
+      if(selectedChat?._id === message.chatId){
         setAllMessages(prevmsg => [...prevmsg, message])
       }
 
-      if(selectedChat._id === message.chatId && message.sender !== user._id){
+      if(selectedChat?._id === message.chatId && message.sender !== user._id){
         clearUnreadMessages();
       }
     })
@@ -143,7 +144,7 @@ const ChatArea = ({ socket, onlineUser }) => {
         const selectedChat = store.getState().userReducer.selectedChat;
         const allChats = store.getState().userReducer.allChats;
 
-        if(selectedChat._id === data.chatId){
+        if(selectedChat?._id === data.chatId){
           const updatedChats = allChats.map(chat => {
               if(chat._id === data.chatId){
                   return { ...chat, unReadMessageCount: 0}
@@ -161,7 +162,7 @@ const ChatArea = ({ socket, onlineUser }) => {
 
     socket.on('started-typing', (data) => {
       setData(data)
-        if(selectedChat._id === data.chatId && data.sender !== user._id){
+        if(selectedChat?._id === data.chatId && data.sender !== user._id){
           setIsTyping(true);
           setTimeout(() => {
               setIsTyping(false);
@@ -169,7 +170,7 @@ const ChatArea = ({ socket, onlineUser }) => {
         }
     })
 
-  },[selectedChat])
+  },[selectedChat, dispatch, socket, user._id])
 
   useEffect(() => {
       const msgContainer = document.getElementById('main-chat-area');
@@ -227,7 +228,7 @@ const ChatArea = ({ socket, onlineUser }) => {
                       {msg.text && <p className="leading-relaxed">{msg.text}</p>}
                       {msg.image && (
                         <div className="mt-2 rounded-lg overflow-hidden border border-white/20">
-                          <img src={msg.image} alt="shared" className="max-w-full h-auto max-h-[300px] object-contain" />
+                          <img src={msg.image} alt="shared" className="max-w-full h-auto max-h-75 object-contain" />
                         </div>
                       )}
                     </div>

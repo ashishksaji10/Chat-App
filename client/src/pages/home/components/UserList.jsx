@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 import toast from 'react-hot-toast';
-import { createNewChat } from './../../../apiCalls/Chat';
+import { createNewChat, getAllChats } from './../../../apiCalls/Chat';
 import { showLoader, hideLoader } from './../../../redux/loaderSlice';
 import { setAllChats, setSelectedChat } from './../../../redux/userSlice';
 import moment from 'moment';
@@ -34,7 +34,8 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
     }
 
     const openChat = (searchedUserId) => {
-        const chat = allChats.find(chat => 
+        const chat = (allChats || []).find(chat => 
+            chat && chat.members && 
             chat.members.map(m => m._id).includes(currentUser._id) &&
             chat.members.map(m => m._id).includes(searchedUserId));
 
@@ -51,7 +52,7 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
     }
 
     const getLastMessageTimeStamp = (userId) => {
-        const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId));
+        const chat = (allChats || []).find(chat => chat && chat.members && chat.members.map(m => m._id).includes(userId));
         if(!chat || !chat?.lastMessage){
             return "";
         }else {
@@ -60,7 +61,7 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
     }
 
     const getLastMessage = (userId) => {
-        const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId));
+        const chat = (allChats || []).find(chat => chat && chat.members && chat.members.map(m => m._id).includes(userId));
         if(!chat || !chat.lastMessage){
             return ""
         }else {
@@ -77,8 +78,8 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
     }
 
     const getUnreadMessageCount = (userId) => {
-        const chat = allChats.find(chat => 
-            chat.members.map(m => m._id).includes(userId)
+        const chat = (allChats || []).find(chat => 
+            chat && chat.members && chat.members.map(m => m._id).includes(userId)
         );
 
         if(chat && chat.unReadMessageCount && chat.lastMessage.sender !== currentUser._id){
@@ -108,13 +109,20 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
                 allChats = updatedChats
             }
             const latestChat = allChats.find(chat => chat._id === message.chatId);
-            
             const otherChats = allChats.filter(chat => chat._id !== message.chatId);
-            allChats = [latestChat, ...otherChats];
 
-            dispatch(setAllChats(allChats));
+            if (latestChat) {
+                allChats = [latestChat, ...otherChats];
+                dispatch(setAllChats(allChats));
+            } else {
+                getAllChats().then(response => {
+                    if (response.success) {
+                        dispatch(setAllChats(response.data));
+                    }
+                });
+            }
         })
-    }, [])
+    }, [dispatch, socket])
 
     const getData = () => {
         if(searchKey === ""){
@@ -131,10 +139,12 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
     return (
         <div className="flex flex-col">
             {(getData() || []).map(obj => {
+                if (!obj) return null;
                 let user = obj;
                 if(obj.members){
                     user = obj.members.find(mem => mem._id !== currentUser._id);
                 }
+                if (!user) return null;
                 const isSelected = isSelectedChat(user);
                 const isOnline = onlineUser.includes(user._id);
                 const unreadCount = getUnreadMessageCount(user._id);
@@ -193,7 +203,7 @@ const UserList = ({ searchKey, socket, onlineUser }) => {
                         </div>
 
                         {/* Start Chat Button for Search Results */}
-                        {!allChats.find(chat => chat.members.map(m => m._id).includes(user._id)) && (
+                        {!(allChats || []).find(chat => chat && chat.members && chat.members.map(m => m._id).includes(user._id)) && (
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button 
                                     className="bg-[#e74c3c] text-white text-[10px] font-bold py-2 px-3 rounded-lg shadow-md hover:bg-[#c0392b] active:scale-95" 

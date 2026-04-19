@@ -1,83 +1,77 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { getAllUsers, getLoggedUser } from '../apiCalls/Users'
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAllUsers, getLoggedUser } from "../apiCalls/Users";
 import { useDispatch, useSelector } from "react-redux";
 import { hideLoader, showLoader } from "../redux/loaderSlice";
 import toast from "react-hot-toast";
 import { setAllChats, setAllUsers, setUser } from "../redux/userSlice";
 import { getAllChats } from "../apiCalls/Chat";
 
-const ProtectedRoute = ({children}) => {
+const ProtectedRoute = ({ children }) => {
+  const { user } = useSelector((state) => state.userReducer);
+  const dispatch = useDispatch();
 
-    const { user } = useSelector(state => state.userReducer)
-    const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const getLoggedInUser = async () => {
+    let response = null;
+    try {
+      dispatch(showLoader());
+      response = await getLoggedUser();
+      dispatch(hideLoader());
 
-    const getLoggedInUser = async () =>{
-        let response = null;
-        try {
-          dispatch(showLoader());
-          response = await getLoggedUser();
-          dispatch(hideLoader());
-
-          if(response.success){
-            dispatch(setUser(response.data));
-          }else{
-            toast.error(response.message)
-            navigate('/login');
-          }
-        } catch (error) {
-            dispatch(hideLoader());
-            navigate('/login');
-        } 
-    }
-
-    const getAllUsersFromDb = async () =>{
-        let response = null;
-        try {
-          dispatch(showLoader());
-          response = await getAllUsers();
-          dispatch(hideLoader());
-
-          if(response.success){
-            dispatch(setAllUsers(response.data));
-          }else{
-            toast.error(response.message)
-            navigate('/login');
-          }
-        } catch (error) {
-            dispatch(hideLoader());
-            navigate('/login');
-        } 
-    }
-
-    const getCurrentUserChat = async () => {
-      try {
-        const response = await getAllChats();
-        if(response.success){
-          dispatch(setAllChats(response.data));
-        }
-      } catch (error) {
-        navigate('/login');
+      if (response.success) {
+        dispatch(setUser(response.data));
+      } else {
+        toast.error(response.message);
+        navigate("/login");
       }
+    } catch (error) {
+      dispatch(hideLoader());
+      navigate("/login");
     }
+  };
 
-    useEffect(() => {
-        if(localStorage.getItem('token')){
-            getLoggedInUser();
-            getAllUsersFromDb();
-            getCurrentUserChat();
-        }else {
-            navigate('/login');
-        }
-    },[])
-  return (
-    
-    <div>
-      {children}
-    </div>
-  )
-}
+  const getAllUsersFromDb = async () => {
+    let response = null;
+    try {
+      dispatch(showLoader());
+      response = await getAllUsers();
+      dispatch(hideLoader());
 
-export default ProtectedRoute
+      if (response.success) {
+        dispatch(setAllUsers(response.data));
+      } else {
+        toast.error(response.message);
+        navigate("/login");
+      }
+    } catch (error) {
+      dispatch(hideLoader());
+      navigate("/login");
+    }
+  };
+
+  const getCurrentUserChat = async () => {
+    try {
+      const response = await getAllChats();
+      if (response.success) {
+        dispatch(setAllChats(response.data));
+      }
+    } catch (error) {
+      navigate("/login");
+    }
+  };
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      getLoggedInUser();
+      getAllUsersFromDb();
+      getCurrentUserChat();
+    } else {
+      navigate("/login");
+    }
+  }, []);
+  return <div>{children}</div>;
+};
+
+export default ProtectedRoute;

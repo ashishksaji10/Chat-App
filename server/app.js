@@ -14,7 +14,8 @@ app.use(express.urlencoded({ limit: '5mb', extended: true }));
 const server = require('http').createServer(app);
 
 const io = require('socket.io')(server, {cors: {
-    origin: 'http://localhost:5173',
+    // origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL,
     methods: ['GET', 'POST']
 }})
 
@@ -60,15 +61,29 @@ io.on('connection', socket => {
     })
 
     socket.on('user-login', userId => {
+        socket.userId = userId; // Store userId on the socket for easy removal on disconnect
         if(!onlineUsers.includes(userId)){
             onlineUsers.push(userId)
         }
-        socket.emit('online-users', onlineUsers);
+        io.emit('online-user-updated', onlineUsers);
     })
 
     socket.on('user-offline', userId => {
-        onlineUsers.splice(onlineUsers.indexOf(userId),1);
+        const index = onlineUsers.indexOf(userId);
+        if (index > -1) {
+            onlineUsers.splice(index, 1);
+        }
         io.emit('online-user-updated', onlineUsers);
+    })
+
+    socket.on('disconnect', () => {
+        if (socket.userId) {
+            const index = onlineUsers.indexOf(socket.userId);
+            if (index > -1) {
+                onlineUsers.splice(index, 1);
+                io.emit('online-user-updated', onlineUsers);
+            }
+        }
     })
 })
 

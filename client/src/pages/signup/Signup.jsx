@@ -38,7 +38,7 @@ const Signup = () => {
     <div className="min-h-screen w-full flex items-center justify-center relative">
       <div className="absolute inset-0 bg-[url('/images/quick-chat-app-background.jpg')] bg-no-repeat bg-cover z-[-2]"></div>
       <div className="absolute inset-0 bg-[#e74c3c] opacity-70 z-[-1]"></div>
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-[450px] p-8 mx-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-112.5 p-8 mx-4">
         <div className="text-center pb-6">
           <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
         </div>

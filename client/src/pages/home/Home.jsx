@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 
-const socket = io("http://localhost:5000");
+const socket = io(import.meta.env.VITE_URL);
 
 const Home = () => {
   const { selectedChat, user } = useSelector((state) => state.userReducer);
